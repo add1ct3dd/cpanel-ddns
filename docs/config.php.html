@@ -1,0 +1,34 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <title>config.php</title>
+        <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+    </head>
+    <body>
+        <div>
+            <pre>
+            config.php is a file that defines the following constants:
+
+            define('CPANEL_DOMAIN', &lt;the domain your cpanel server is located at&gt;);
+            define('CPANEL_UN', &lt;your cpanel username&gt;);
+            define('CPANEL_PW', &lt;your cpanel password&gt;);
+            define('ZONE_DOMAIN', &lt;the domain of the dns zone you want to edit&gt;);
+
+            /*
+            * What type of ACL are we using?
+            * 
+            * single = a single IP address
+            * multi = an array of single ip addresses
+            * subnet = an array of host/mask subnet pairs.
+            * 
+            define('IP_ACCESS_MODE', &lt;single, multi, subnet&gt;);
+
+            define('ALLOWED_IPS', &lt;either a single ip or an array of ips that are 
+            allowed to access the dns records&gt;);
+
+            It will need to be created and placed in the same directory as index.php
+
+            </pre>
+        </div>
+    </body>
+</html>

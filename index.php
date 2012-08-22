@@ -1,15 +1,7 @@
 <?php
 
-/**
- * config.php is a file that defines the following constants:
- * 
- * define('CPANEL_DOMAIN', <the domain your cpanel server is located at>);
- * define('CPANEL_UN', <your cpanel username>);
- * define('CPANEL_PW', <your cpanel password>);
- *
- * define('ZONE_DOMAIN', <the domain of the dns zone you want to edit>);
- * 
- * It will need to be created and placed in the same directly as this file
+/*
+ * See docs/config.php.html for details on this file
  */
 require_once 'config.php';
 
@@ -20,7 +12,7 @@ require_once 'config.php';
  * 
  * @return xml $xmlZone
  */
-function cpanel_ddns_zone_fetch() {
+function cpanel_ddns_ZoneFetch() {
 
     $additionalHeaders = '';
     $process = curl_init(CPANEL_DOMAIN . '/xml-api/cpanel?cpanel_xmlapi_module=ZoneEdit&cpanel_xmlapi_func=fetchzone&domain=' . ZONE_DOMAIN);
@@ -40,7 +32,7 @@ function cpanel_ddns_zone_fetch() {
     return $zoneXML;
 }
 
-$dns_zones = cpanel_ddns_zone_fetch();
+$dns_zones = cpanel_ddns_ZoneFetch();
 
 // Count the number of zone records
 $dns_records_count = count($dns_zones->children()); // PHP < 5.3 version
@@ -85,7 +77,6 @@ echo ' % ' . $zone_record['address'] . ' % ';
 $zone_record['class'] = (string) $dns_zones->record[$zone_number_to_update]->class;
 echo ' % ' . $zone_record['class'] . ' % ';
 
-//print_r($dns_zone_records);
+//print_r($dns_zones);
 //echo $dns_records_count;
-//echo $return;
 ?>
