@@ -1,0 +1,5 @@
+http://jordih.net/201110/dynamic-dns-cpanel
+
+http://stefan.gofferje.net/it-stuff/24-scripts/39-dynamic-dns-update-via-cpanel-api
+
+http://cpanel.jwebnet.net/xml-api/cpanel?cpanel_xmlapi_module=ZoneEdit&amp;cpanel_xmlapi_func=fetchzone&amp;domain=jwebnet.net
