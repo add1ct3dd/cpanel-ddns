@@ -1,12 +1,18 @@
 <?php
 
 /**
+ * cpanel-ddns
+ * 
+ * @author Joseph W. Becher <jwbecher@gmail.com>
+ * @package cpanel-ddns
+ */
+/**
  * This file will serve as the server endpoint that the client connects to.
  * 
  * Will take both GET and POST requests for plain-text and authenticated updates
  */
-/*
- * See docs/config.php.html for details on this file
+/**
+ * See config.example.php for details on this file
  */
 require_once 'config.php';
 
@@ -49,17 +55,7 @@ if (!$is_client_allowed) {
     die;
 }
 
-function cpanel_ddns_CheckClientACL($ip) {
-    if (is_array(ALLOWED_IPS)) {
-        // ALLOWED_IPS is an array of IP addresses
-    } else {
-        // ALLOWED IPS is a single IP
-        if ($ip != ALLOWED_IPS) {
-            return FALSE;
-        }
-    }
-    return TRUE;
-}
+
 
 echo 'Updated.';
 ?>
