@@ -12,7 +12,7 @@ require_once 'config.php';
  * 
  * @return xml $xmlZone
  */
-function cpanel_ddns_ZoneFetch() {
+function cpanel_ddns_FetchDNSZoneFile() {
 
     $additionalHeaders = '';
     $process = curl_init(CPANEL_DOMAIN . '/xml-api/cpanel?cpanel_xmlapi_module=ZoneEdit&cpanel_xmlapi_func=fetchzone&domain=' . ZONE_DOMAIN);
@@ -32,50 +32,100 @@ function cpanel_ddns_ZoneFetch() {
     return $zoneXML;
 }
 
-$dns_zones = cpanel_ddns_ZoneFetch();
+$dns_zones_XML = cpanel_ddns_FetchDNSZoneFile();
 
 // Count the number of zone records
-$dns_records_count = count($dns_zones->children()); // PHP < 5.3 version
+$dns_records_count = count($dns_zones_XML->children()); // PHP < 5.3 version
 
 /*
- * Loop though the zone records untul we find the one that contains the record 
- * we wish to update.
+ * Loop though the zone records until we find the one that contains the record 
+ * we wish to update. Also locate the SOA record if exists.
  */
 for ($i = 0; $i <= $dns_records_count; $i++) {
-    if ($dns_zones->record[$i]->name == 'pinger.jwebnet.net.' && $dns_zones->record[$i]->type == 'A') {
+    // Search for the record we want to update
+    if ($dns_zones_XML->record[$i]->name == 'pinger.jwebnet.net.' && $dns_zones_XML->record[$i]->type == 'A') {
         $zone_number_to_update = $i;
-//        print_r($dns_zones->record[$i]);
+    }
+    // Look for the SOA record
+    if ($dns_zones_XML->record[$i]->type == 'SOA') {
+        $zone_number_of_SOA_record = $i;
     }
 }
 
-/*
- * We need to obtain the following values from the current record 
- * in order to safely update it:
+/**
  * 
- * Line
- * ttl
- * address
- * 
- * The following additional values may be used later:
- * 
- * name
- * class
- * 
+ * @param xml $zoneXML
+ * @param int $recordNumber
+ * @return array $zone_record
  */
-$zone_record['name'] = (string) $dns_zones->record[$zone_number_to_update]->name;
-echo ' % ' . $zone_record['name'] . ' % ';
+function cpanel_ddns_FetchRecordFromXMLByNumber($zoneXML, $recordNumber) {
+    $zone_record['type'] = (string) $zoneXML->record[$recordNumber]->type;
+//    echo ' % ' . $zone_record['type'] . ' % ';
+    /*
+     * Check what type of record we are reading
+     */
+    switch ($zone_record['type']) {
+        case 'SOA':
 
-$zone_record['Line'] = (string) $dns_zones->record[$zone_number_to_update]->Line;
-echo ' % ' . $zone_record['Line'] . ' % ';
+            $zone_record['serial'] = (string) $zoneXML->record[$recordNumber]->serial;
+//            echo ' % ' . $zone_record['serial'] . ' % ';
+            break;
+        case 'A':
+            /*
+             * We need to obtain the following values from the current record 
+             * in order to safely update it:
+             * 
+             * Line
+             * ttl
+             * address
+             * 
+             * The following additional values may be used later:
+             * 
+             * name
+             * class
+             * type
+             * 
+             */
+            $zone_record['Line'] = (string) $zoneXML->record[$recordNumber]->Line;
+            echo ' % ' . $zone_record['Line'] . ' % ';
 
-$zone_record['ttl'] = (string) $dns_zones->record[$zone_number_to_update]->ttl;
-echo ' % ' . $zone_record['ttl'] . ' % ';
+            $zone_record['ttl'] = (string) $zoneXML->record[$recordNumber]->ttl;
+            echo ' % ' . $zone_record['ttl'] . ' % ';
 
-$zone_record['address'] = (string) $dns_zones->record[$zone_number_to_update]->address;
-echo ' % ' . $zone_record['address'] . ' % ';
+            $zone_record['address'] = (string) $zoneXML->record[$recordNumber]->address;
+            echo ' % ' . $zone_record['address'] . ' % ';
 
-$zone_record['class'] = (string) $dns_zones->record[$zone_number_to_update]->class;
-echo ' % ' . $zone_record['class'] . ' % ';
+            $zone_record['name'] = (string) $zoneXML->record[$recordNumber]->name;
+            echo ' % ' . $zone_record['name'] . ' % ';
+
+            $zone_record['class'] = (string) $zoneXML->record[$recordNumber]->class;
+            echo ' % ' . $zone_record['class'] . ' % ';
+
+
+            break;
+        default:
+            echo 'moo?';
+            break;
+    }
+    return $zone_record;
+}
+
+/*
+ * Check if we were able to locate an SOA record and return the serial if so
+ */
+if (!is_null($zone_number_of_SOA_record)) {
+    // We were able to locate an SOA record
+    $SOA_record = cpanel_ddns_FetchRecordFromXMLByNumber($dns_zones_XML, $zone_number_of_SOA_record);
+    echo ' % ' . $SOA_record['serial'] . ' % ';
+} else {
+    // We were not able to locate an SOA record for this domain.
+    echo 'SOA not found for this domain.';
+    die;
+}
+
+
+
+$zone_record_to_update = cpanel_ddns_FetchRecordFromXMLByNumber($dns_zones_XML, $zone_number_to_update);
 
 //print_r($dns_zones);
 //echo $dns_records_count;
