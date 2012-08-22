@@ -42,11 +42,11 @@ for ($i = 0; $i <= $dns_records_count; $i++) {
     }
 }
 
-echo ' % ' . (string) $dns_zones->record[$zone_number_to_update]->name . ' % "';
-echo ' % ' . (string) $dns_zones->record[$zone_number_to_update]->Line . ' % "';
-echo ' % ' . (string) $dns_zones->record[$zone_number_to_update]->ttl . ' % "';
-echo ' % ' . (string) $dns_zones->record[$zone_number_to_update]->address . ' % "';
-echo ' % ' . (string) $dns_zones->record[$zone_number_to_update]->class . ' % "';
+echo ' % ' . (string) $dns_zones->record[$zone_number_to_update]->name . ' % ';
+echo ' % ' . (string) $dns_zones->record[$zone_number_to_update]->Line . ' % ';
+echo ' % ' . (string) $dns_zones->record[$zone_number_to_update]->ttl . ' % ';
+echo ' % ' . (string) $dns_zones->record[$zone_number_to_update]->address . ' % ';
+echo ' % ' . (string) $dns_zones->record[$zone_number_to_update]->class . ' % ';
 
 //print_r($dns_zone_records);
 //echo $dns_records_count;
