@@ -31,29 +31,18 @@ function cpanel_ddns_CheckClientACL($ip) {
 }
 
 /**
- * Uses CURL to query the XML API of cpanel for the DNS zone records
+ * Uses the cpanel_api to query the XML API of cpanel for the DNS zone records
  * 
  * @return xml $xmlZone
  */
 function cpanel_ddns_FetchDNSZoneFile() {
-
-    $additionalHeaders = '';
-    $process = curl_init(CPANEL_DOMAIN . '/xml-api/cpanel?cpanel_xmlapi_module=ZoneEdit&cpanel_xmlapi_func=fetchzone&domain=' . ZONE_DOMAIN);
-    curl_setopt($process, CURLOPT_HTTPHEADER, array('Content-Type: application/xml', $additionalHeaders));
-    curl_setopt($process, CURLOPT_USERPWD, CPANEL_UN . ":" . CPANEL_PW);
-    curl_setopt($process, CURLOPT_TIMEOUT, 30);
-    curl_setopt($process, CURLOPT_RETURNTRANSFER, TRUE);
-    $tmpData = curl_exec($process);
-
-// Check if any error occured
-    if (curl_errno($process)) {
-        //TODO: Handle errors cleanly
-        print_r(curl_getinfo($process));
-        die;
-    }
+    require_once 'classes/cpanel_api_cpanelAPI.php';
+    $cpanelAPI = new cpanel_api_cpanelAPI(CPANEL_DOMAIN, CPANEL_UN, CPANEL_PW);
+    $tmpData = $cpanelAPI->SendAPICall('ZoneEdit', 'fetchzone', '&domain=' . ZONE_DOMAIN);
     $zoneXML = simplexml_load_string($tmpData)->data;
     return $zoneXML;
 }
+
 /**
  * Updates a DNS record with an IP address
  * 
@@ -63,27 +52,16 @@ function cpanel_ddns_FetchDNSZoneFile() {
  */
 function cpanel_ddns_UpdateDNSZoneFile($zoneRecordToUpdate, $ipAddress) {
 
-    $additionalHeaders = '';
-    $process = curl_init(CPANEL_DOMAIN . '/xml-api/cpanel?cpanel_xmlapi_module=ZoneEdit&cpanel_xmlapi_func=edit_zone_record&domain=' . ZONE_DOMAIN 
-            . '&Line=' . $zoneRecordToUpdate['Line'] 
-            . '&type=A'  
-            . '&address=' . $ipAddress);
-    curl_setopt($process, CURLOPT_HTTPHEADER, array('Content-Type: application/xml', $additionalHeaders));
-    curl_setopt($process, CURLOPT_USERPWD, CPANEL_UN . ":" . CPANEL_PW);
-    curl_setopt($process, CURLOPT_TIMEOUT, 30);
-    curl_setopt($process, CURLOPT_RETURNTRANSFER, TRUE);
-    $tmpData = curl_exec($process);
-
-// Check if any error occured
-    if (curl_errno($process)) {
-        //TODO: Handle errors cleanly
-        print_r(curl_getinfo($process));
-        die;
-    }
+    require_once 'classes/cpanel_api_cpanelAPI.php';
+    $cpanelAPI = new cpanel_api_cpanelAPI(CPANEL_DOMAIN, CPANEL_UN, CPANEL_PW);
+    $tmpData = $cpanelAPI->SendAPICall('ZoneEdit', 'edit_zone_record', '&domain=' . ZONE_DOMAIN
+            . '&Line=' . $zoneRecordToUpdate['Line']
+            . '&type=A'
+            . '&address=' . $ipAddress
+    );
     $zoneXML = simplexml_load_string($tmpData)->data;
     return $zoneXML;
 }
-
 
 /**
  * Search for a host in the DNS Zone file and return the details in an array
@@ -156,7 +134,7 @@ function cpanel_ddns_ErrorMessagesDisplay() {
     global $cpanel_ddns_error_messages;
 
     foreach ($cpanel_ddns_error_messages as $errMsg) {
-        echo $errMsg."<br>\n";
+        echo $errMsg . "<br>\n";
     }
     die;
 }
@@ -224,5 +202,4 @@ function cpanel_ddns_FetchRecordFromXMLByNumber($zoneXML, $recordNumber) {
  * An easy way to display infomation cleanly to the browser
  */
 define('PHPBR', "<br>\n");
-
 ?>
