@@ -54,7 +54,12 @@ function cpanel_ddns_FetchDNSZoneFile() {
     $zoneXML = simplexml_load_string($tmpData)->data;
     return $zoneXML;
 }
-
+/**
+ * 
+ * @param array $zoneRecordToUpdate
+ * @param string $ipAddress
+ * @return xml
+ */
 function cpanel_ddns_UpdateDNSZoneFile($zoneRecordToUpdate, $ipAddress) {
 
     $additionalHeaders = '';
@@ -74,7 +79,6 @@ function cpanel_ddns_UpdateDNSZoneFile($zoneRecordToUpdate, $ipAddress) {
         print_r(curl_getinfo($process));
         die;
     }
-    echo $tmpData;
     $zoneXML = simplexml_load_string($tmpData)->data;
     return $zoneXML;
 }
