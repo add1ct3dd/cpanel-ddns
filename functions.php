@@ -55,6 +55,7 @@ function cpanel_ddns_FetchDNSZoneFile() {
     return $zoneXML;
 }
 /**
+ * Updates a DNS record with an IP address
  * 
  * @param array $zoneRecordToUpdate
  * @param string $ipAddress
