@@ -28,8 +28,6 @@ function cpanel_ddns_CheckClientACL($ip) {
 /**
  * Uses CURL to query the XML API of cpanel for the DNS zone records
  * 
- * Returns the XML response
- * 
  * @return xml $xmlZone
  */
 function cpanel_ddns_FetchDNSZoneFile() {

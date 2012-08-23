@@ -1,17 +1,26 @@
 <?php
 
 /**
- * cpanel-ddns
+ * Example config.php file.
  * 
+ * config.php is the file that defines the following settings<br><br>
+ * Example file:
+ * <code>
+ * <?php
+ * define('CPANEL_DOMAIN', 'cpanel.example.com');
+ * define('CPANEL_UN', 'user');
+ * define('CPANEL_PW', 'password');
+ * define('ZONE_DOMAIN', 'example.com');
+ * define('IP_ACCESS_MODE', 'single');
+ * define('ALLOWED_IPS', '192.168.1.100');
+ * ?>
+ * </code>
+ *   
  * @author Joseph W. Becher <jwbecher@gmail.com>
  * @package cpanel-ddns
  */
 /**
- * 
- * config.php is a file that defines the following constants:
- */
-/**
- * the domain your cpanel server is located
+ * the domain where your cpanel server is located
  */
 define('CPANEL_DOMAIN', '');
 
@@ -39,8 +48,7 @@ define('ZONE_DOMAIN', '');
  */
 define('IP_ACCESS_MODE', '');
 /**
- * either a single ip or an array of ips that are 
- * allowed to access the dns records
+ * either a single ip or an array of ips that are allowed to access the dns records
  */
 define('ALLOWED_IPS', '');
 
