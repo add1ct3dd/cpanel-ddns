@@ -1,10 +1,15 @@
 <?php
+
 /**
  * cpanel-ddns
  * 
  * @author Joseph W. Becher <jwbecher@gmail.com>
  * @package cpanel-ddns
  */
+/**
+ * This array holds error messages for user display
+ */
+$cpanel_ddns_error_messages = array();
 
 /**
  * 
@@ -50,6 +55,107 @@ function cpanel_ddns_FetchDNSZoneFile() {
     return $zoneXML;
 }
 
+function cpanel_ddns_UpdateDNSZoneFile($zoneRecordToUpdate, $ipAddress) {
+
+    $additionalHeaders = '';
+    $process = curl_init(CPANEL_DOMAIN . '/xml-api/cpanel?cpanel_xmlapi_module=ZoneEdit&cpanel_xmlapi_func=edit_zone_record&domain=' . ZONE_DOMAIN 
+            . '&Line=' . $zoneRecordToUpdate['Line'] 
+            . '&type=A'  
+            . '&address=' . $ipAddress);
+    curl_setopt($process, CURLOPT_HTTPHEADER, array('Content-Type: application/xml', $additionalHeaders));
+    curl_setopt($process, CURLOPT_USERPWD, CPANEL_UN . ":" . CPANEL_PW);
+    curl_setopt($process, CURLOPT_TIMEOUT, 30);
+    curl_setopt($process, CURLOPT_RETURNTRANSFER, TRUE);
+    $tmpData = curl_exec($process);
+
+// Check if any error occured
+    if (curl_errno($process)) {
+        //TODO: Handle errors cleanly
+        print_r(curl_getinfo($process));
+        die;
+    }
+    echo $tmpData;
+    $zoneXML = simplexml_load_string($tmpData)->data;
+    return $zoneXML;
+}
+
+
+/**
+ * Search for a host in the DNS Zone file and return the details in an array
+ * 
+ * @param xml $zoneXML
+ * @param string $host
+ * @return array
+ */
+function cpanel_ddns_SearchForHostInZoneFile($zoneXML, $host) {
+// Count the number of zone records
+    $dns_records_count = count($zoneXML->children()); // PHP < 5.3 version
+
+    /*
+     * Loop though the zone records until we find the one that contains the record 
+     * we wish to update. Also locate the SOA record if exists.
+     */
+    for ($i = 0; $i <= $dns_records_count; $i++) {
+        // Search for the record we want to update
+        if ($zoneXML->record[$i]->name == $host . '.' && $zoneXML->record[$i]->type == 'A') {
+            $zone_number_to_update = $i;
+        }
+        // Look for the SOA record
+        if ($zoneXML->record[$i]->type == 'SOA') {
+            $zone_number_of_SOA_record = $i;
+        }
+    }
+
+    /*
+     * Check if we were able to locate an SOA record and return the serial if so
+     */
+    if (!is_null($zone_number_of_SOA_record)) {
+        // We were able to locate an SOA record
+        $SOA_record = cpanel_ddns_FetchRecordFromXMLByNumber($zoneXML, $zone_number_of_SOA_record);
+//        echo ' % ' . $SOA_record['serial'] . ' % ';
+    } else {
+        // We were not able to locate an SOA record for this domain.
+        cpanel_ddns_ErrorMessageAdd('SOA not found for this domain.');
+        return FALSE;
+    }
+
+    /*
+     * Were we able to locate the host record?
+     */
+    if (!is_null($zone_number_to_update)) {
+        // We were able to locate an A record
+        $zone_record = cpanel_ddns_FetchRecordFromXMLByNumber($zoneXML, $zone_number_to_update);
+//        echo ' % ' . $zone_record['name'] . ' % ';
+    } else {
+        // We were not able to locate an A record for this host.
+        cpanel_ddns_ErrorMessageAdd('A record was not found for this host.');
+        return FALSE;
+    }
+
+    return $zone_record;
+}
+
+/**
+ * Adds an error message to the cpanel_ddns_error_messages array
+ * 
+ * @global array $cpanel_ddns_error_messages
+ * @param string $message
+ */
+function cpanel_ddns_ErrorMessageAdd($message) {
+    global $cpanel_ddns_error_messages;
+
+    $cpanel_ddns_error_messages[] = $message;
+}
+
+function cpanel_ddns_ErrorMessagesDisplay() {
+    global $cpanel_ddns_error_messages;
+
+    foreach ($cpanel_ddns_error_messages as $errMsg) {
+        echo $errMsg."<br>\n";
+    }
+    die;
+}
+
 /**
  * Retrieves a single DNS record from the zone file XML
  * 
@@ -86,28 +192,32 @@ function cpanel_ddns_FetchRecordFromXMLByNumber($zoneXML, $recordNumber) {
              * 
              */
             $zone_record['Line'] = (string) $zoneXML->record[$recordNumber]->Line;
-            echo ' % ' . $zone_record['Line'] . ' % ';
+//            echo ' % ' . $zone_record['Line'] . ' % ';
 
             $zone_record['ttl'] = (string) $zoneXML->record[$recordNumber]->ttl;
-            echo ' % ' . $zone_record['ttl'] . ' % ';
+//            echo ' % ' . $zone_record['ttl'] . ' % ';
 
             $zone_record['address'] = (string) $zoneXML->record[$recordNumber]->address;
-            echo ' % ' . $zone_record['address'] . ' % ';
+//            echo ' % ' . $zone_record['address'] . ' % ';
 
             $zone_record['name'] = (string) $zoneXML->record[$recordNumber]->name;
-            echo ' % ' . $zone_record['name'] . ' % ';
+//            echo ' % ' . $zone_record['name'] . ' % ';
 
             $zone_record['class'] = (string) $zoneXML->record[$recordNumber]->class;
-            echo ' % ' . $zone_record['class'] . ' % ';
-
+//            echo ' % ' . $zone_record['class'] . ' % ';
 
             break;
         default:
             echo 'moo?';
+            die;
             break;
     }
     return $zone_record;
 }
 
+/**
+ * An easy way to display infomation cleanly to the browser
+ */
+define('PHPBR', "<br>\n");
 
 ?>
