@@ -1,11 +1,8 @@
 <?php
-
 /**
- * updateDNS
+ * fetchDNS
  * 
- * This file will serve as the server endpoint that the client connects to.
- * 
- * Will take both GET and POST requests for plain-text and authenticated updates
+ * This file will search for a dns record and return the IP address.
  * 
  * @author Joseph W. Becher <jwbecher@gmail.com>
  * @package cpanel-ddns
@@ -41,23 +38,8 @@ if (!$the_request['host']) {
     $host_to_update = $the_request['host'];
 }
 
-// Is an IP included?
-if (!$the_request['ip']) {
-    // Attempt to auto-guess the IP address
-    $ip_to_update = $_SERVER['REMOTE_ADDR'];
-} else {
-    /*
-     * Sanitize the IP and check if it's valid.
-     */
-    $ip_to_update = filter_var($the_request['ip'], FILTER_VALIDATE_IP, FILTER_FLAG_IPV4);
-    if ($ip_to_update == FALSE) {
-        echo 'Invalid IP was provided.';
-        die;
-    }
-}
-
 /*
- * Is the requesting client allowed to perform updates?
+ * Is the requesting client allowed to perform lookups?
  */
 $is_client_allowed = cpanel_ddns_CheckClientACL($_SERVER['REMOTE_ADDR']);
 
@@ -76,10 +58,8 @@ if ($zone_record_to_update == FALSE) {
     cpanel_ddns_ErrorMessagesDisplay();
 }
 
-echo 'The requested host record for '.$host_to_update.' was found in the zone file in line '.$zone_record_to_update['Line'].'.'.PHPBR;
-$updated_record = $dns_zones_XML = cpanel_ddns_UpdateDNSZoneFile($zone_record_to_update, $ip_to_update);
+echo 'The requested host record for '.$host_to_update.' was found in the zone file pointing to IP address '.$zone_record_to_update['address'].'.'.PHPBR;
 
 //echo $updated_record;
 
-echo "The request from {$_SERVER['REMOTE_ADDR']} was recieved.";
 ?>
